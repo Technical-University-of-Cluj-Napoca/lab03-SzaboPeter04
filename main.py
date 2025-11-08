@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # flags for running the main loop
     run = True
     started = False
-
+    alg="BFS"
     while run:
         grid.draw()  # draw the grid and its spots
         for event in pygame.event.get():
@@ -58,16 +58,28 @@ if __name__ == "__main__":
                     start = None
                 elif spot == end:
                     end = None
-
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not started:
+                if event.key==pygame.K_1:
+                    alg="BFS"
+                    pygame.display.set_caption("BFS")
+                elif event.key==pygame.K_2:
+                    alg="DFS"
+                    pygame.display.set_caption("DFS")
+                elif event.key==pygame.K_3:
+                    alg="A*"
+                    pygame.display.set_caption("A*")
+                elif event.key == pygame.K_SPACE and not started:
                     # run the algorithm
                     for row in grid.grid:
                         for spot in row:
                             spot.update_neighbors(grid.grid)
                     # here you can call the algorithms
-                    # bfs(lambda: grid.draw(), grid, start, end)
-                    # dfs(lambda: grid.draw(), grid, start, end)
+                    if alg=="BFS":
+                        bfs(lambda: grid.draw(), grid, start, end)
+                    elif alg=="DFS":
+                        dfs(lambda: grid.draw(), grid, start, end)
+                    elif alg=="A*":
+                        dfs(lambda: grid.draw(), grid, start, end)
                     # astar(lambda: grid.draw(), grid, start, end)
                     # ... and the others?
                     started = False
