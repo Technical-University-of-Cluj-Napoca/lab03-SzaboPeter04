@@ -4,6 +4,18 @@ from queue import PriorityQueue
 from grid import Grid
 from spot import Spot
 
+def _pos(s:Spot)->tuple[int,int]:
+    if hasattr(s,"get_pos"):
+        return s.get_pos()
+    return (s.row,s.col)
+
+def _reconstruct_path(came_from:dict[tuple[int,int],tuple[int, int]],current_rc:tuple[int,int],grid:Grid,draw:callable)->None:
+    while current_rc in came_from:
+        current_rc=came_from[current_rc]
+        r,c=current_rc
+        grid.grid[r][c].make_path()
+        draw()
+
 def bfs(draw: callable, grid: Grid, start: Spot, end: Spot) -> bool:
     """
     Breadth-First Search (BFS) Algorithm.
@@ -15,7 +27,33 @@ def bfs(draw: callable, grid: Grid, start: Spot, end: Spot) -> bool:
     Returns:
         bool: True if a path is found, False otherwise.
     """
-    pass
+    start_r,start_c=_pos(start)
+    end_r,end_c=_pos(end)
+    q=deque([(start_r,start_c)])
+    visited:set[tuple[int,int]]={(start_r,start_c)}
+    parent:dict[tuple[int,int],tuple[int,int]]={}
+    start.make_open()
+    while q:
+        pygame.event.pump()
+        r,c=q.popleft()
+        current=grid.grid[r][c]
+        if current==end:
+            _reconstruct_path(parent,(end_r,end_c),grid,draw)
+            end.make_end()
+            start.make_start()
+            return True
+        for neighbor in current.neighbors:
+            if not(neighbor.is_barrier()):
+                neigh_r,neigh_c=_pos(neighbor)
+                if (neigh_r,neigh_c) not in visited:
+                    visited.add((neigh_r,neigh_c))
+                    parent[(neigh_r,neigh_c)]=(r,c)
+                    neighbor.make_open()
+                    q.append((neigh_r,neigh_c))
+        if current not in (start,end):
+            current.make_closed()
+        draw()
+    return False
 
 def dfs(draw: callable, grid: Grid, start: Spot, end: Spot) -> bool:
     """
@@ -28,7 +66,34 @@ def dfs(draw: callable, grid: Grid, start: Spot, end: Spot) -> bool:
     Returns:
         bool: True if a path is found, False otherwise.
     """
-    pass
+    start_r,start_c=_pos(start)
+    end_r,end_c=_pos(end)
+    q=deque([(start_r,start_c)])
+    stack:list[tuple[int,int]]=[(start_r,start_c)]
+    visited:set[tuple[int,int]]={(start_r,start_c)}
+    parent:dict[tuple[int,int],tuple[int,int]]={}
+    start.make_open()
+    while stack:
+        pygame.event.pump()
+        r,c=stack.pop()
+        current=grid.grid[r][c]
+        if current==end:
+            _reconstruct_path(parent,(end_r,end_c),grid,draw)
+            end.make_end()
+            start.make_start()
+            return True
+        if current not in (start,end):
+            current.make_closed()
+        for neighbor in current.neighbors:
+            if not(neighbor.is_barrier()):
+                neigh_r,neigh_c=_pos(neighbor)
+                if (neigh_r,neigh_c) not in visited:
+                    visited.add((neigh_r,neigh_c))
+                    parent[(neigh_r,neigh_c)]=(r,c)
+                    neighbor.make_open()
+                    stack.append((neigh_r,neigh_c))
+        draw()
+    return False
 
 def h_manhattan_distance(p1: tuple[int, int], p2: tuple[int, int]) -> float:
     """
@@ -64,7 +129,7 @@ def astar(draw: callable, grid: Grid, start: Spot, end: Spot) -> bool:
     Returns:
         bool: True if a path is found, False otherwise.
     """
-    pass
+   # neiig
 
 # and the others algorithms...
 # ▢ Depth-Limited Search (DLS)
